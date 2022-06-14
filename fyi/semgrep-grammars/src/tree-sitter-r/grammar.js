@@ -2,22 +2,24 @@ const PREC = {
   COMMENT: -1,
 
   ASSIGN: 0,
-  TILDE: 1,
-  OR: 2,
-  AND: 3,
-  NOT: 4,
-  REL: 5,
-  PLUS: 6,
-  TIMES: 7,
-  SPECIAL: 8,
-  COLON: 9,
-  NEG: 10,
-  EXP: 11,
-  DOLLAR: 12,
-  NS_GET: 13,
-  CALL: 14,
-  SUBSET: 15,
-  FLOAT: 16
+  PIPE: 1,
+  TILDE: 2,
+  OR: 3,
+  AND: 4,
+  NOT: 5,
+  REL: 6,
+  PLUS: 7,
+  TIMES: 8,
+  SPECIAL: 9,
+  COLON: 10,
+  NEG: 11,
+  EXP: 12,
+  DOLLAR: 13,
+  NS_GET: 14,
+  CALL: 15,
+  CALL_PIPE: 16,
+  SUBSET: 17,
+  FLOAT: 18
 }
 
 newline = '\n',
@@ -31,16 +33,32 @@ module.exports = grammar({
     /\s/
   ],
 
+  conflicts: ($) => [
+    [$._pipe_rhs_argument, $._argument],
+    [$.pipe_rhs_arguments, $.arguments]
+  ],
+
+  externals: $ => [
+    $._raw_string_literal
+  ],
+
   rules: {
     program: $ => repeat(seq($._expression, optional(terminator))),
 
     _definition: $ => choice(
-      $.function_definition
+      $.function_definition,
+      $.lambda_function
       // TODO: other kinds of definitions
     ),
 
     function_definition: $ => prec.left(seq(
       'function',
+      $.formal_parameters,
+      $._expression
+    )),
+
+    lambda_function: $ => prec.left(seq(
+      '\\',
       $.formal_parameters,
       $._expression
     )),
@@ -95,10 +113,16 @@ module.exports = grammar({
       ')'
     ),
 
+    default_parameter: $ => seq(
+      field('name', $.identifier),
+      '=',
+      field('value', $._expression)
+    ),
+
     _formal_parameter: $ => choice(
-        $.identifier,
-        seq(choice($.identifier, $.string, $.dots), '=', $._expression),
-        $.dots
+      $.identifier,
+      $.default_parameter,
+      $.dots
     ),
 
     block: $ => seq(
@@ -108,17 +132,20 @@ module.exports = grammar({
     ),
 
     arguments: $ => repeat1(choice(
-      $._argument,
-      ','
+      $._argument, 
+      ',',
+    )),
+
+    default_argument: $ => prec.right(seq(
+      field('name', choice($.identifier, $.string, $.dots)),
+      '=',
+      field('value', optional($._expression))
     )),
 
     _argument: $ => prec.left(choice(
-      field('value', $._expression),
-      seq(
-        field('name', choice($.identifier, $.string, $.dots)),
-        '=',
-        field('value', optional($._expression))
-    ))),
+      $._expression,
+      $.default_argument,
+    )),
 
     call: $ => prec(PREC.CALL, seq(
       field('function', $._expression),
@@ -132,7 +159,8 @@ module.exports = grammar({
       $.left_assignment,
       $.left_assignment2,
       $.right_assignment,
-      $.super_assignment
+      $.super_assignment,
+      $.super_right_assignment,
     ),
 
     left_assignment: $ => prec.right(PREC.ASSIGN,
@@ -140,35 +168,42 @@ module.exports = grammar({
         field('name', $._expression),
         '<-',
         field('value', $._expression)
-    )),
+      )),
 
     left_assignment2: $ => prec.right(PREC.ASSIGN,
       seq(
         field('name', $._expression),
         ':=',
         field('value', $._expression)
-    )),
+      )),
 
     equals_assignment: $ => prec.right(PREC.ASSIGN,
       seq(
         field('name', $._expression),
         '=',
         field('value', $._expression)
-    )),
+      )),
 
     super_assignment: $ => prec.right(PREC.ASSIGN,
       seq(
         field('name', $._expression),
         '<<-',
-      field('value', $._expression)
-    )),
+        field('value', $._expression)
+      )),
+
+    super_right_assignment: $ => prec.right(PREC.ASSIGN,
+      seq(
+        field('value', $._expression),
+        '->>',
+        field('name', $._expression)
+      )),
 
     right_assignment: $ => prec.left(PREC.ASSIGN,
       seq(
         field('value', $._expression),
         '->',
-      field('name', $._expression)
-    )),
+        field('name', $._expression)
+      )),
 
     brace_list: $ => seq(
       '{',
@@ -209,7 +244,7 @@ module.exports = grammar({
       )
     )),
 
-    slot : $ => prec(PREC.DOLLAR, seq(
+    slot: $ => prec(PREC.DOLLAR, seq(
       $._expression,
       '@',
       $.identifier
@@ -229,33 +264,71 @@ module.exports = grammar({
 
     dots: $ => '...',
 
-    unary: $ => choice(
-      prec.left(PREC.NEG, seq('-', $._expression)),
-      prec.left(PREC.NEG, seq('+', $._expression)),
-      prec.left(PREC.NOT, seq('!', $._expression)),
-      prec.left(PREC.TILDE, seq('~', $._expression))
-    ),
+    placeholder: $ => '_',
 
-    binary: $ => choice(
-      prec.left(PREC.PLUS, seq($._expression, '+', $._expression)),
-      prec.left(PREC.PLUS, seq($._expression, '-', $._expression)),
-      prec.left(PREC.TIMES, seq($._expression, '*', $._expression)),
-      prec.left(PREC.TIMES, seq($._expression, '/', $._expression)),
-      prec.right(PREC.EXP, seq($._expression, '^', $._expression)),
-      prec.left(PREC.REL, seq($._expression, '<', $._expression)),
-      prec.left(PREC.REL, seq($._expression, '>', $._expression)),
-      prec.left(PREC.REL, seq($._expression, '<=', $._expression)),
-      prec.left(PREC.REL, seq($._expression, '>=', $._expression)),
-      prec.left(PREC.REL, seq($._expression, '==', $._expression)),
-      prec.left(PREC.REL, seq($._expression, '!=', $._expression)),
-      prec.left(PREC.OR, seq($._expression, '||', $._expression)),
-      prec.left(PREC.OR, seq($._expression, '|', $._expression)),
-      prec.left(PREC.AND, seq($._expression, '&&', $._expression)),
-      prec.left(PREC.AND, seq($._expression, '&', $._expression)),
-      prec.left(PREC.SPECIAL, seq($._expression, $.special, $._expression)),
-      prec.left(PREC.COLON, seq($._expression, ':', $._expression)),
-      prec.left(PREC.TILDE, seq($._expression, '~', $._expression))
-    ),
+    pipe_placeholder_argument: $ => prec.right(seq(
+      field('name', $.identifier),
+      '=',
+      field('value', $.placeholder)
+    )),
+
+    _pipe_rhs_argument: $ => prec.right(choice(
+      $._expression,
+      $.default_argument,
+      alias($.pipe_placeholder_argument, $.default_argument)
+    )),
+
+    pipe_rhs_arguments: $ => repeat1(choice(
+      $._pipe_rhs_argument,
+      ','
+    )),
+
+    // pipe_hrs is a call function
+    pipe_rhs: $ => prec.left(PREC.CALL_PIPE, seq(
+      field('function', $._expression),
+      '(',
+      field('arguments', optional(alias($.pipe_rhs_arguments, $.arguments))),
+      ')'
+    )),
+
+    pipe: $ => prec(PREC.PIPE, seq(
+      field('left', $._expression),
+      field('operator', '|>'),
+      field('right', alias($.pipe_rhs, $.call))
+    )),
+
+    unary: $ => {
+      const operators = [
+        [PREC.NEG, choice('-', '+')],
+        [PREC.NOT, '!'],
+        [PREC.TILDE, '~'],
+      ];
+
+      return choice(...operators.map(([precedence, operator]) => prec.left(precedence, seq(
+        field('operator', operator),
+        field('operand', $._expression)
+      ))));
+    },
+
+    binary: $ => {
+      const operators = [
+        [prec.left, PREC.PLUS, choice('+', '-')],
+        [prec.left, PREC.TIMES, choice('*', '/')],
+        [prec.right, PREC.EXP, '^'],
+        [prec.left, PREC.REL, choice('<', '>', '<=', '>=', '==', '!=')],
+        [prec.left, PREC.OR, choice('||', '|')],
+        [prec.left, PREC.AND, choice('&&', '&')],
+        [prec.left, PREC.SPECIAL, $.special],
+        [prec.left, PREC.COLON, ':'],
+        [prec.left, PREC.TILDE, '~'],
+      ];
+
+      return choice(...operators.map(([fn, precedence, operator]) => fn(precedence, seq(
+        field('left', $._expression),
+        field('operator', operator),
+        field('right', $._expression)
+      ))));
+    },
 
     break: $ => 'break',
 
@@ -283,11 +356,13 @@ module.exports = grammar({
       $.string,
       $.call,
       $.function_definition,
+      $.lambda_function,
       $._assignment,
       $.brace_list,
       $.paren_list,
       $.binary,
       $.unary,
+      $.pipe,
       $.subset,
       $.subset2,
       $.dollar,
@@ -308,23 +383,23 @@ module.exports = grammar({
       $.nan,
       $.na,
       $.dots,
-      ';'
+      // ';'
     )),
 
-    identifier: $ => 
+    identifier: $ =>
       choice(
-      /[A-Za-z.][A-Za-z0-9_.]*/,
-      seq(
-        '`',
-        repeat(choice(
-          /[^`\\\n]+|\\\r?\n/,
-          $.escape_sequence
-        )),
-        '`'
-      )
-    ),
+        /[.\p{XID_Start}][._\p{XID_Continue}]*/,
+        seq(
+          '`',
+          repeat(choice(
+            /[^`\\\n]+|\\\r?\n/,
+            $.escape_sequence
+          )),
+          '`'
+        )
+      ),
 
-    integer: $ => token(prec(PREC.FLOAT+1,
+    integer: $ => token(prec(PREC.FLOAT + 1,
       seq(
         choice(
           seq(
@@ -358,6 +433,7 @@ module.exports = grammar({
     comment: $ => token(prec(PREC.COMMENT, seq('#', /.*/))),
 
     string: $ => choice(
+      $._raw_string_literal,
       seq(
         '"',
         repeat(choice(
@@ -378,10 +454,10 @@ module.exports = grammar({
 
     special: $ => seq(
       '%',
-    repeat(choice(
-      /[^%\\\n]+|\\\r?\n/,
-      $.escape_sequence
-    )),
+      repeat(choice(
+        /[^%\\\n]+|\\\r?\n/,
+        $.escape_sequence
+      )),
       '%'
     ),
 

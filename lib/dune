@@ -24,7 +24,7 @@
   )
   (foreign_stubs
     (language cxx)
-    (names )
+    (names scanner)
     (flags -fPIC
            -I .)
   )

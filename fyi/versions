@@ -1,18 +1,17 @@
 File: semgrep-grammars/src/tree-sitter-r/grammar.js
 Git repo name: tree-sitter-r
-Latest commit in repo: 1e373cfdc4550c3654a0b90e239cbf6e8adc22d3
+Latest commit in repo: 205c2877af33a814386ff275031f88400a011397
 Last change in file:
-  commit 1e373cfdc4550c3654a0b90e239cbf6e8adc22d3
+  commit 205c2877af33a814386ff275031f88400a011397
+  Merge: 1d4ccdc b84759d
   Author: Jim Hester <james.f.hester@gmail.com>
-  Date:   Mon Feb 1 10:15:09 2021 -0500
+  Date:   Wed May 25 11:20:55 2022 -0400
   
-      Fix precedence of expressions within arugments of calls
-      
-      Fixes #4
+      Merge branch 'feature/raw-string-literals'
 ---
 File: semgrep-grammars/src/semgrep-r/grammar.js
-Git repo name: ocaml-tree-sitter
-Latest commit in repo: f0469e1b59ee4df9d8cdded2a7d5cb124f3ea264
+Git repo name: ocaml-tree-sitter-semgrep
+Latest commit in repo: 9a4ef713c49e61cbb245ac0ebcc5e5d79f0be00e
 Last change in file:
   commit 1cfa0a2c63a1218cf7752cb1504689eed2511548
   Merge: e5e0c02 dbc2761
