@@ -47,6 +47,9 @@ let map_na (env : env) (x : CST.na) =
 let map_pat_3e41275 (env : env) (tok : CST.pat_3e41275) =
   (* pattern [.\p{XID_Start}][._\p{XID_Continue}]* *) token env tok
 
+let map_semgrep_metavariable (env : env) (tok : CST.semgrep_metavariable) =
+  (* semgrep_metavariable *) token env tok
+
 let map_pat_5e7ac5f (env : env) (tok : CST.pat_5e7ac5f) =
   (* pattern [^%\\\n]+|\\\r?\n *) token env tok
 
@@ -71,19 +74,23 @@ let map_special (env : env) ((v1, v2, v3) : CST.special) =
 
 let map_identifier (env : env) (x : CST.identifier) =
   (match x with
-  | `Pat_3e41275 x -> map_pat_3e41275 env x
-  | `BQUOT_rep_choice_pat_4ad362e_BQUOT (v1, v2, v3) ->
-      let v1 = (* "`" *) token env v1 in
-      let v2 =
-        List.map (fun x ->
-          (match x with
-          | `Pat_4ad362e x -> map_pat_4ad362e env x
-          | `Esc_seq tok -> (* escape_sequence *) token env tok
-          )
-        ) v2
-      in
-      let v3 = (* "`" *) token env v3 in
-      todo env (v1, v2, v3)
+  | `Choice_pat_3e41275 x ->
+      (match x with
+      | `Pat_3e41275 x -> map_pat_3e41275 env x
+      | `BQUOT_rep_choice_pat_4ad362e_BQUOT (v1, v2, v3) ->
+          let v1 = (* "`" *) token env v1 in
+          let v2 =
+            List.map (fun x ->
+              (match x with
+              | `Pat_4ad362e x -> map_pat_4ad362e env x
+              | `Esc_seq tok -> (* escape_sequence *) token env tok
+              )
+            ) v2
+          in
+          let v3 = (* "`" *) token env v3 in
+          todo env (v1, v2, v3)
+      )
+  | `Semg_meta tok -> (* semgrep_metavariable *) token env tok
   )
 
 let map_string_ (env : env) (x : CST.string_) =

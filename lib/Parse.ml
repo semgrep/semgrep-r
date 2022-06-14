@@ -58,6 +58,7 @@ let children_regexps : (string * Run.exp option) list = [
   "dots", None;
   "raw_string_literal", None;
   "pat_5e7ac5f", None;
+  "semgrep_metavariable", None;
   "escape_sequence", None;
   "break", None;
   "pat_3e57880", None;
@@ -67,6 +68,25 @@ let children_regexps : (string * Run.exp option) list = [
       Token (Name "float");
       Token (Literal "i");
     ];
+  );
+  "identifier",
+  Some (
+    Alt [|
+      Alt [|
+        Token (Name "pat_3e41275");
+        Seq [
+          Token (Literal "`");
+          Repeat (
+            Alt [|
+              Token (Name "pat_4ad362e");
+              Token (Name "escape_sequence");
+            |];
+          );
+          Token (Literal "`");
+        ];
+      |];
+      Token (Name "semgrep_metavariable");
+    |];
   );
   "special",
   Some (
@@ -80,22 +100,6 @@ let children_regexps : (string * Run.exp option) list = [
       );
       Token (Literal "%");
     ];
-  );
-  "identifier",
-  Some (
-    Alt [|
-      Token (Name "pat_3e41275");
-      Seq [
-        Token (Literal "`");
-        Repeat (
-          Alt [|
-            Token (Name "pat_4ad362e");
-            Token (Name "escape_sequence");
-          |];
-        );
-        Token (Literal "`");
-      ];
-    |];
   );
   "string",
   Some (
@@ -709,6 +713,11 @@ let trans_pat_5e7ac5f ((kind, body) : mt) : CST.pat_5e7ac5f =
   | Leaf v -> v
   | Children _ -> assert false
 
+let trans_semgrep_metavariable ((kind, body) : mt) : CST.semgrep_metavariable =
+  match body with
+  | Leaf v -> v
+  | Children _ -> assert false
+
 let trans_escape_sequence ((kind, body) : mt) : CST.escape_sequence =
   match body with
   | Leaf v -> v
@@ -732,6 +741,55 @@ let trans_complex ((kind, body) : mt) : CST.complex =
           (
             trans_float_ (Run.matcher_token v0),
             Run.trans_token (Run.matcher_token v1)
+          )
+      | _ -> assert false
+      )
+  | Leaf _ -> assert false
+
+let trans_identifier ((kind, body) : mt) : CST.identifier =
+  match body with
+  | Children v ->
+      (match v with
+      | Alt (0, v) ->
+          `Choice_pat_3e41275 (
+            (match v with
+            | Alt (0, v) ->
+                `Pat_3e41275 (
+                  trans_pat_3e41275 (Run.matcher_token v)
+                )
+            | Alt (1, v) ->
+                `BQUOT_rep_choice_pat_4ad362e_BQUOT (
+                  (match v with
+                  | Seq [v0; v1; v2] ->
+                      (
+                        Run.trans_token (Run.matcher_token v0),
+                        Run.repeat
+                          (fun v ->
+                            (match v with
+                            | Alt (0, v) ->
+                                `Pat_4ad362e (
+                                  trans_pat_4ad362e (Run.matcher_token v)
+                                )
+                            | Alt (1, v) ->
+                                `Esc_seq (
+                                  trans_escape_sequence (Run.matcher_token v)
+                                )
+                            | _ -> assert false
+                            )
+                          )
+                          v1
+                        ,
+                        Run.trans_token (Run.matcher_token v2)
+                      )
+                  | _ -> assert false
+                  )
+                )
+            | _ -> assert false
+            )
+          )
+      | Alt (1, v) ->
+          `Semg_meta (
+            trans_semgrep_metavariable (Run.matcher_token v)
           )
       | _ -> assert false
       )
@@ -761,45 +819,6 @@ let trans_special ((kind, body) : mt) : CST.special =
               v1
             ,
             Run.trans_token (Run.matcher_token v2)
-          )
-      | _ -> assert false
-      )
-  | Leaf _ -> assert false
-
-let trans_identifier ((kind, body) : mt) : CST.identifier =
-  match body with
-  | Children v ->
-      (match v with
-      | Alt (0, v) ->
-          `Pat_3e41275 (
-            trans_pat_3e41275 (Run.matcher_token v)
-          )
-      | Alt (1, v) ->
-          `BQUOT_rep_choice_pat_4ad362e_BQUOT (
-            (match v with
-            | Seq [v0; v1; v2] ->
-                (
-                  Run.trans_token (Run.matcher_token v0),
-                  Run.repeat
-                    (fun v ->
-                      (match v with
-                      | Alt (0, v) ->
-                          `Pat_4ad362e (
-                            trans_pat_4ad362e (Run.matcher_token v)
-                          )
-                      | Alt (1, v) ->
-                          `Esc_seq (
-                            trans_escape_sequence (Run.matcher_token v)
-                          )
-                      | _ -> assert false
-                      )
-                    )
-                    v1
-                  ,
-                  Run.trans_token (Run.matcher_token v2)
-                )
-            | _ -> assert false
-            )
           )
       | _ -> assert false
       )

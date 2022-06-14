@@ -11,16 +11,14 @@ Last change in file:
 ---
 File: semgrep-grammars/src/semgrep-r/grammar.js
 Git repo name: ocaml-tree-sitter-semgrep
-Latest commit in repo: 9a4ef713c49e61cbb245ac0ebcc5e5d79f0be00e
+Latest commit in repo: dc268d053bbda7c7863e3bbd3420440fa5e8857c
 Last change in file:
-  commit 1cfa0a2c63a1218cf7752cb1504689eed2511548
-  Merge: e5e0c02 dbc2761
-  Author: Martin Jambon <martin@mjambon.com>
-  Date:   Fri Feb 5 17:06:26 2021 -0800
+  commit dc268d053bbda7c7863e3bbd3420440fa5e8857c
+  Author: pad <pad@r2c.dev>
+  Date:   Tue Jun 14 16:05:45 2022 +0200
   
-      Add 'lang/semgrep-grammars/' from commit 'dbc2761d2c62e60d2181d777393f9eaea08673a1'
+      R: allow metavariable in semgrep-r
       
-      git-subtree-dir: lang/semgrep-grammars
-      git-subtree-mainline: e5e0c029006cf2d087615cc1420db28550c9ad38
-      git-subtree-split: dbc2761d2c62e60d2181d777393f9eaea08673a1
+      test plan:
+      ./test-lang r
 ---

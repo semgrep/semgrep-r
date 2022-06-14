@@ -36,6 +36,9 @@ type pat_3e41275 =
   Token.t (* pattern [.\p{XID_Start}][._\p{XID_Continue}]* *)
 [@@deriving sexp_of]
 
+type semgrep_metavariable = Token.t
+[@@deriving sexp_of]
+
 type pat_5e7ac5f = Token.t (* pattern [^%\\\n]+|\\\r?\n *)
 [@@deriving sexp_of]
 
@@ -54,13 +57,19 @@ type special = (
 [@@deriving sexp_of]
 
 type identifier = [
-    `Pat_3e41275 of pat_3e41275
-  | `BQUOT_rep_choice_pat_4ad362e_BQUOT of (
-        Token.t (* "`" *)
-      * [ `Pat_4ad362e of pat_4ad362e | `Esc_seq of escape_sequence (*tok*) ]
-          list (* zero or more *)
-      * Token.t (* "`" *)
-    )
+    `Choice_pat_3e41275 of [
+        `Pat_3e41275 of pat_3e41275
+      | `BQUOT_rep_choice_pat_4ad362e_BQUOT of (
+            Token.t (* "`" *)
+          * [
+                `Pat_4ad362e of pat_4ad362e
+              | `Esc_seq of escape_sequence (*tok*)
+            ]
+              list (* zero or more *)
+          * Token.t (* "`" *)
+        )
+    ]
+  | `Semg_meta of semgrep_metavariable (*tok*)
 ]
 [@@deriving sexp_of]
 
@@ -279,6 +288,9 @@ type null (* inlined *) = Token.t (* "NULL" *)
 type placeholder (* inlined *) = Token.t (* "_" *)
 [@@deriving sexp_of]
 
+type true_ (* inlined *) = Token.t (* "TRUE" *)
+[@@deriving sexp_of]
+
 type false_ (* inlined *) = Token.t (* "FALSE" *)
 [@@deriving sexp_of]
 
@@ -295,9 +307,6 @@ type next (* inlined *) = Token.t (* "next" *)
 [@@deriving sexp_of]
 
 type dots (* inlined *) = Token.t (* "..." *)
-[@@deriving sexp_of]
-
-type true_ (* inlined *) = Token.t (* "TRUE" *)
 [@@deriving sexp_of]
 
 type break (* inlined *) = Token.t (* "break" *)
