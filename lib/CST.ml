@@ -9,19 +9,14 @@ open! Sexplib.Conv
 open Tree_sitter_run
 
 type integer = Token.t
-[@@deriving sexp_of]
 
 type pat_de5d470 = Token.t (* pattern "[^\"\\\\\\n]+|\\\\\\r?\\n" *)
-[@@deriving sexp_of]
 
 type pat_4ad362e = Token.t (* pattern [^`\\\n]+|\\\r?\n *)
-[@@deriving sexp_of]
 
 type raw_string_literal = Token.t
-[@@deriving sexp_of]
 
 type float_ = Token.t
-[@@deriving sexp_of]
 
 type na = [
     `NA of Token.t (* "NA" *)
@@ -30,23 +25,17 @@ type na = [
   | `NA_int_ of Token.t (* "NA_integer_" *)
   | `NA_real_ of Token.t (* "NA_real_" *)
 ]
-[@@deriving sexp_of]
 
 type pat_3e41275 =
   Token.t (* pattern [.\p{XID_Start}][._\p{XID_Continue}]* *)
-[@@deriving sexp_of]
 
 type semgrep_metavariable = Token.t
-[@@deriving sexp_of]
 
 type pat_5e7ac5f = Token.t (* pattern [^%\\\n]+|\\\r?\n *)
-[@@deriving sexp_of]
 
 type escape_sequence = Token.t
-[@@deriving sexp_of]
 
 type pat_3e57880 = Token.t (* pattern "[^'\\\\\\n]+|\\\\\\r?\\n" *)
-[@@deriving sexp_of]
 
 type special = (
     Token.t (* "%" *)
@@ -54,7 +43,6 @@ type special = (
       list (* zero or more *)
   * Token.t (* "%" *)
 )
-[@@deriving sexp_of]
 
 type identifier = [
     `Choice_pat_3e41275 of [
@@ -71,7 +59,6 @@ type identifier = [
     ]
   | `Semg_meta of semgrep_metavariable (*tok*)
 ]
-[@@deriving sexp_of]
 
 type string_ = [
     `Raw_str_lit of raw_string_literal (*tok*)
@@ -88,7 +75,6 @@ type string_ = [
       * Token.t (* "'" *)
     )
 ]
-[@@deriving sexp_of]
 
 type argument = [ `Exp of expression | `Defa_arg of default_argument ]
 
@@ -280,60 +266,44 @@ and unary = [
   | `BANG_exp of (Token.t (* "!" *) * expression)
   | `TILDE_exp of (Token.t (* "~" *) * expression)
 ]
-[@@deriving sexp_of]
 
 type null (* inlined *) = Token.t (* "NULL" *)
-[@@deriving sexp_of]
 
 type placeholder (* inlined *) = Token.t (* "_" *)
-[@@deriving sexp_of]
 
 type true_ (* inlined *) = Token.t (* "TRUE" *)
-[@@deriving sexp_of]
 
 type false_ (* inlined *) = Token.t (* "FALSE" *)
-[@@deriving sexp_of]
 
 type comment (* inlined *) = Token.t
-[@@deriving sexp_of]
 
 type nan (* inlined *) = Token.t (* "NaN" *)
-[@@deriving sexp_of]
 
 type inf (* inlined *) = Token.t (* "Inf" *)
-[@@deriving sexp_of]
 
 type next (* inlined *) = Token.t (* "next" *)
-[@@deriving sexp_of]
 
 type dots (* inlined *) = Token.t (* "..." *)
-[@@deriving sexp_of]
 
 type break (* inlined *) = Token.t (* "break" *)
-[@@deriving sexp_of]
 
 type complex (* inlined *) = (float_ (*tok*) * Token.t (* "i" *))
-[@@deriving sexp_of]
 
 type namespace_get (* inlined *) = (
     identifier * Token.t (* "::" *) * identifier
 )
-[@@deriving sexp_of]
 
 type namespace_get_internal (* inlined *) = (
     identifier * Token.t (* ":::" *) * identifier
 )
-[@@deriving sexp_of]
 
 type pipe_placeholder_argument (* inlined *) = (
     identifier * Token.t (* "=" *) * Token.t (* "_" *)
 )
-[@@deriving sexp_of]
 
 type brace_list (* inlined *) = (
     Token.t (* "{" *) * program * Token.t (* "}" *)
 )
-[@@deriving sexp_of]
 
 type call (* inlined *) = (
     expression
@@ -341,30 +311,25 @@ type call (* inlined *) = (
   * arguments option
   * Token.t (* ")" *)
 )
-[@@deriving sexp_of]
 
 type default_parameter (* inlined *) = (
     identifier * Token.t (* "=" *) * expression
 )
-[@@deriving sexp_of]
 
 type dollar (* inlined *) = (
     expression
   * Token.t (* "$" *)
   * [ `Id of identifier | `Str of string_ ]
 )
-[@@deriving sexp_of]
 
 type equals_assignment (* inlined *) = (
     expression * Token.t (* "=" *) * expression
 )
-[@@deriving sexp_of]
 
 type for_ (* inlined *) = (
     Token.t (* "for" *) * Token.t (* "(" *) * identifier * Token.t (* "in" *)
   * expression * Token.t (* ")" *) * expression
 )
-[@@deriving sexp_of]
 
 type if_ (* inlined *) = (
     Token.t (* "if" *)
@@ -374,38 +339,30 @@ type if_ (* inlined *) = (
   * expression
   * (Token.t (* "else" *) * expression) option
 )
-[@@deriving sexp_of]
 
 type left_assignment (* inlined *) = (
     expression * Token.t (* "<-" *) * expression
 )
-[@@deriving sexp_of]
 
 type left_assignment2 (* inlined *) = (
     expression * Token.t (* ":=" *) * expression
 )
-[@@deriving sexp_of]
 
 type paren_list (* inlined *) = (
     Token.t (* "(" *)
   * expression list (* zero or more *)
   * Token.t (* ")" *)
 )
-[@@deriving sexp_of]
 
 type pipe (* inlined *) = (expression * Token.t (* "|>" *) * pipe_rhs)
-[@@deriving sexp_of]
 
 type repeat (* inlined *) = (Token.t (* "repeat" *) * expression)
-[@@deriving sexp_of]
 
 type right_assignment (* inlined *) = (
     expression * Token.t (* "->" *) * expression
 )
-[@@deriving sexp_of]
 
 type slot (* inlined *) = (expression * Token.t (* "@" *) * identifier)
-[@@deriving sexp_of]
 
 type subset (* inlined *) = (
     expression
@@ -413,7 +370,6 @@ type subset (* inlined *) = (
   * arguments option
   * Token.t (* "]" *)
 )
-[@@deriving sexp_of]
 
 type subset2 (* inlined *) = (
     expression
@@ -421,43 +377,32 @@ type subset2 (* inlined *) = (
   * arguments option
   * Token.t (* "]]" *)
 )
-[@@deriving sexp_of]
 
 type super_assignment (* inlined *) = (
     expression * Token.t (* "<<-" *) * expression
 )
-[@@deriving sexp_of]
 
 type super_right_assignment (* inlined *) = (
     expression * Token.t (* "->>" *) * expression
 )
-[@@deriving sexp_of]
 
 type switch (* inlined *) = (
     Token.t (* "switch" *) * Token.t (* "(" *) * expression
   * Token.t (* "," *) * arguments * Token.t (* ")" *)
 )
-[@@deriving sexp_of]
 
 type while_ (* inlined *) = (
     Token.t (* "while" *) * Token.t (* "(" *) * expression
   * Token.t (* ")" *) * expression
 )
-[@@deriving sexp_of]
 
 type block (* inlined *) = (
     Token.t (* "{" *)
   * expression list (* zero or more *)
   * Token.t (* "}" *)
 )
-[@@deriving sexp_of]
 
 type definition (* inlined *) = [
     `Func_defi of function_definition
   | `Lambda_func of lambda_function
 ]
-[@@deriving sexp_of]
-
-let dump_tree root =
-  sexp_of_program root
-  |> Print_sexp.to_stdout
