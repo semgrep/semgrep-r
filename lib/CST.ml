@@ -406,3 +406,7 @@ type definition (* inlined *) = [
     `Func_defi of function_definition
   | `Lambda_func of lambda_function
 ]
+
+type extra = Comment of Loc.t * comment
+
+type extras = extra list
